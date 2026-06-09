@@ -1,24 +1,29 @@
 // Models.cs
-public class Course 
+public class Student 
 { 
-    public required string Code { get; init; } 
+    public required string Id { get; init; } 
  
-    public required string Title 
+    public required string Name 
     { 
         get; 
         set => field = !string.IsNullOrWhiteSpace(value) 
             ? value 
-            : throw new ArgumentException("Title cannot be empty or whitespace.", nameof(value)); 
+            : throw new ArgumentException("Name cannot be empty or whitespace.", nameof(value)); 
     } 
  
-    // C# 14 Auto-property validation using 'field' 
-    public int Capacity 
+    public int Age 
     { 
         get; 
-        set => field = value > 0 
+        set => field = value is >= 16 and <= 100 
             ? value 
-            : throw new ArgumentOutOfRangeException(nameof(value), "System constraint: Capacity must be greater than zero."); 
+            : throw new ArgumentOutOfRangeException(nameof(value), "Age must be between 16 and 100."); 
     } 
  
-    public int EnrolledCount { get; set; } 
+    public decimal GPA 
+    { 
+        get; 
+        set => field = value is >= 0.0m and <= 4.0m 
+            ? value 
+            : throw new ArgumentOutOfRangeException(nameof(value), "GPA must be between 0.0 and 4.0."); 
+    } 
 }
