@@ -1,23 +1,82 @@
-﻿using System.Diagnostics; 
-// Simulate 5 database calls, each taking 300ms 
-// THE WRONG WAY: Blocking with Thread.Sleep 
-var sw = Stopwatch.StartNew(); 
-for (int i = 0; i < 5; i++) 
-{ 
-    Thread.Sleep(300);  // Thread is HELD for 300ms  cannot serve anyone else 
-} 
-Console.WriteLine($"Blocking sequential: {sw.ElapsedMilliseconds}ms"); 
+﻿using System;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace AnalyticsDashboard
+{
+    internal class Program
+    {
+        // STEP 3 EXECUTION: Runs inside the Main method
+        static async Task Main(string[] args)
+        {
+            Console.WriteLine("=== Starting TMS Parallel Data Fetcher ===\n");
+            var sw = Stopwatch.StartNew(); 
  
-// ASYNC BUT STILL SEQUENTIAL: Thread released, but calls are one-at-a-time 
-sw.Restart(); 
-for (int i = 0; i < 5; i++) 
-{ 
-    await Task.Delay(300);  // Thread released while waiting  but still sequential 
-} 
-Console.WriteLine($"Async sequential:   {sw.ElapsedMilliseconds}ms"); 
+            // Start all fetches simultaneously - students AND courses 
+            string[] studentIds = ["S1", "S2", "S3", "S4", "S5"]; 
+            string[] courseCodes = ["CRS-101", "CRS-201", "CRS-301"]; 
  
-// THE RIGHT WAY: Async parallel  all 5 start simultaneously 
-sw.Restart(); 
-var tasks = Enumerable.Range(0, 5).Select(_ => Task.Delay(300)); 
-await Task.WhenAll(tasks); 
-Console.WriteLine($"Async parallel:     {sw.ElapsedMilliseconds}ms");
+            // This kicks off the tasks but does NOT wait for them yet
+            var studentTasks = studentIds.Select(id => FetchStudentAsync(id)); 
+            var courseTasks = courseCodes.Select(code => FetchCourseAsync(code)); 
+ 
+            // Both arrays load concurrently in the background
+            Student[] students = await Task.WhenAll(studentTasks); 
+            Course[] courses = await Task.WhenAll(courseCodes.Select(code => FetchCourseAsync(code))); 
+ 
+            Console.WriteLine($"\nLoaded {students.Length} students and {courses.Length} courses in {sw.ElapsedMilliseconds}ms"); 
+            
+            // Print out our fetched data results
+            foreach (var s in students) 
+            { 
+                Console.WriteLine($"  {s.Name} | GPA: {s.GPA}"); 
+            } 
+        }
+
+        // ======================================================================
+        // STEP 2 METHODS: These sit outside Main, but inside the Program class
+        // ======================================================================
+        
+        // Simulates loading a student from a database asynchronously
+        static async Task<Student> FetchStudentAsync(string id) 
+        { 
+            Console.WriteLine($"  Fetching student {id}..."); 
+            await Task.Delay(300);  // Simulate database latency 
+            return new Student 
+            { 
+                Id = id, 
+                Name = $"Student-{id}", 
+                Age = 20, 
+                GPA = id switch 
+                { 
+                    "S1" => 3.8m, 
+                    "S2" => 2.4m, 
+                    "S3" => 3.5m, 
+                    "S4" => 1.9m, 
+                    "S5" => 3.2m, 
+                    _ => 2.5m 
+                } 
+            }; 
+        } 
+ 
+        // Simulates loading a course from a database asynchronously
+        static async Task<Course> FetchCourseAsync(string code) 
+        { 
+            Console.WriteLine($"  Fetching course {code}..."); 
+            await Task.Delay(200);  // Simulate database latency 
+            return new Course 
+            { 
+                Code = code, 
+                Title = $"Course-{code}", 
+                Capacity = code switch 
+                { 
+                    "CRS-101" => 2, 
+                    "CRS-201" => 30, 
+                    "CRS-301" => 15, 
+                    _ => 25 
+                } 
+            }; 
+        } 
+    }
+}
