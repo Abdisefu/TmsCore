@@ -94,6 +94,7 @@ namespace AnalyticsDashboard
             // ======================================================================
             // EXERCISE 7 STEP 3: Catch Domain Exceptions
             // ======================================================================
+            Console.WriteLine("\n=== Exercise 7: Catching Domain Exceptions ===");
             try 
             { 
                 var overflowCourse = new Course { Code = "CRS-999", Title = "Overflow Test", Capacity = 0 }; 
@@ -108,6 +109,23 @@ namespace AnalyticsDashboard
                 Console.WriteLine($"  Course: {ex.CourseCode}"); 
                 Console.WriteLine($"  Message: {ex.Message}"); 
             }
+
+            // ======================================================================
+            // OPTIONAL EXTENSION: THE MODULAR AUDIT PATH (DELEGATES & LAMBDAS)
+            // ======================================================================
+            Console.WriteLine("\n=== Optional Extension: Testing Modular Audit Path ===");
+
+            // TODO 4: Assign a lambda function to the service's delegate property
+            enrollService.OnEnrollmentCompleted = s => 
+            {
+                Console.WriteLine($"  SMS SENT: Welcome to the TMS, {s.Name}!");
+            };
+
+            // Setup a test student model instance
+            var auditStudent = new Student { Id = "S100", Name = "Abeba", Age = 21, GPA = 3.9m };
+
+            // TODO 5: Trigger the finalization pathway
+            enrollService.FinalizeEnrollment(auditStudent);
         }
 
         // ======================================================================
