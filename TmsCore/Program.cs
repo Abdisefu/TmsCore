@@ -1,5 +1,6 @@
-﻿using System;
-using System.Collections.Generic; // Added to support Lists
+﻿// program.cs
+using System;
+using System.Collections.Generic; 
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,7 +9,6 @@ namespace AnalyticsDashboard
 {
     internal class Program
     {
-        // STEP 3 EXECUTION: Runs inside the Main method
         static async Task Main(string[] args)
         {
             Console.WriteLine("=== Starting TMS Parallel Data Fetcher ===\n");
@@ -18,7 +18,6 @@ namespace AnalyticsDashboard
             string[] studentIds = ["S1", "S2", "S3", "S4", "S5"]; 
             string[] courseCodes = ["CRS-101", "CRS-201", "CRS-301"]; 
  
-            // This kicks off the tasks but does NOT wait for them yet
             var studentTasks = studentIds.Select(id => FetchStudentAsync(id)); 
             var courseTasks = courseCodes.Select(code => FetchCourseAsync(code)); 
  
@@ -35,7 +34,7 @@ namespace AnalyticsDashboard
             } 
 
             // ======================================================================
-            // ADDED: Exercise 6 Part B: The TMS Enrollment Engine
+            // Exercise 6 Part B: The TMS Enrollment Engine
             // ======================================================================
             Console.WriteLine("\n=== Starting TMS Enrollment Engine ===");
             
@@ -61,17 +60,34 @@ namespace AnalyticsDashboard
                     Console.WriteLine($"  Rejected: {student.Name}  {ex.Message}"); 
                 } 
             }
+
+            // ======================================================================
+            // EXERCISE 7 STEP 3: Catch Domain Exceptions
+            // ======================================================================
+            Console.WriteLine("\n=== Exercise 7: Catching Domain Exceptions ===");
+            try 
+            { 
+                var overflowCourse = new Course { Code = "CRS-999", Title = "Overflow Test", Capacity = 0 }; 
+                enrollService.ProcessRegistration( 
+                    new Student { Id = "S99", Name = "Test", Age = 20, GPA = 3.0m }, 
+                    overflowCourse 
+                ); 
+            } 
+            catch (CapacityReachedException ex) 
+            { 
+                Console.WriteLine($"Domain exception caught:"); 
+                Console.WriteLine($"  Course: {ex.CourseCode}"); 
+                Console.WriteLine($"  Message: {ex.Message}"); 
+            }
         }
 
         // ======================================================================
-        // STEP 2 METHODS: These sit outside Main, but inside the Program class
+        // STEP 2 METHODS
         // ======================================================================
-        
-        // Simulates loading a student from a database asynchronously
         static async Task<Student> FetchStudentAsync(string id) 
         { 
             Console.WriteLine($"  Fetching student {id}..."); 
-            await Task.Delay(300);  // Simulate database latency 
+            await Task.Delay(300);  
             return new Student 
             { 
                 Id = id, 
@@ -89,11 +105,10 @@ namespace AnalyticsDashboard
             }; 
         } 
  
-        // Simulates loading a course from a database asynchronously
         static async Task<Course> FetchCourseAsync(string code) 
         { 
             Console.WriteLine($"  Fetching course {code}..."); 
-            await Task.Delay(200);  // Simulate database latency 
+            await Task.Delay(200);  
             return new Course 
             { 
                 Code = code, 
