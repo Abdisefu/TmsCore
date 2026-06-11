@@ -62,9 +62,38 @@ namespace AnalyticsDashboard
             }
 
             // ======================================================================
+            // ADDED: EXERCISE 7B - THE ENROLLMENT REPORT INTEGRATION
+            // ======================================================================
+            // Stop the timer 
+            sw.Stop(); 
+            
+            // Calculate class average GPA from loaded students 
+            decimal classAverage = students.Length > 0 
+                ? students.Average(s => s.GPA) 
+                : 0m; 
+            
+            // Print the final report 
+            Console.WriteLine("\n========== ENROLLMENT SUMMARY =========="); 
+            Console.WriteLine($"Total students loaded:      {students.Length}"); 
+            Console.WriteLine($"Successful enrollments:     {enrollments.Count}"); 
+            Console.WriteLine($"Failed enrollments:         {failures.Count}"); 
+            Console.WriteLine($"Class average GPA:          {classAverage:F2}"); 
+            Console.WriteLine($"Total elapsed time:         {sw.ElapsedMilliseconds}ms"); 
+             
+            if (failures.Count > 0) 
+            { 
+                Console.WriteLine("\n--- Failure Details ---"); 
+                foreach (var failure in failures) 
+                { 
+                    Console.WriteLine($"  {failure}"); 
+                } 
+            } 
+            Console.WriteLine("========================================"); 
+
+
+            // ======================================================================
             // EXERCISE 7 STEP 3: Catch Domain Exceptions
             // ======================================================================
-            Console.WriteLine("\n=== Exercise 7: Catching Domain Exceptions ===");
             try 
             { 
                 var overflowCourse = new Course { Code = "CRS-999", Title = "Overflow Test", Capacity = 0 }; 
